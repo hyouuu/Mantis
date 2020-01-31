@@ -487,7 +487,8 @@ extension CropView {
 
 // MARK: - internal API
 extension CropView {
-    func crop(_ image: UIImage) -> UIImage? {
+    func crop(_ image: UIImage? = nil) -> UIImage? {
+        let image = image ?? self.image
         let rect = imageContainer.convert(imageContainer.bounds,
                                           to: self)
         let point = rect.center
@@ -516,10 +517,6 @@ extension CropView {
             let radius = min(croppedImage.size.width, croppedImage.size.height) * radiusToShortSide
             return croppedImage.roundRect(radius)
         }
-    }
-    
-    func crop() -> UIImage? {
-        return crop(image)
     }
         
     func handleRotate() {
