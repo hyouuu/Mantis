@@ -62,11 +62,7 @@ public class CropViewController: UIViewController {
     private var stackView: UIStackView?
     private var initialLayout = false
     
-    deinit {
-        print("CropViewController deinit.")
-    }
-    
-    init(image: UIImage, config: Mantis.Config = Mantis.Config(), mode: CropViewControllerMode = .normal) {
+    public init(image: UIImage, config: Mantis.Config = Mantis.Config(), mode: CropViewControllerMode = .normal) {
         self.image = image
         self.config = config
         self.mode = mode
@@ -77,7 +73,11 @@ public class CropViewController: UIViewController {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
-        
+
+    deinit {
+        print("CropViewController deinit.")
+    }
+
     fileprivate func createCropToolbar() {
         cropToolbar.backgroundColor = .black
         
@@ -326,8 +326,12 @@ extension CropViewController: CropViewDelegate {
 
 // API
 extension CropViewController {
+    public func applyCrop(image: UIImage? = nil) -> UIImage? {
+        return cropView.crop(image ?? cropView.image)
+    }
+
     public func crop() {
-        guard let image = cropView.crop() else {
+        guard let image = applyCrop() else {
             delegate?.cropViewControllerDidFailToCrop(self, original: cropView.image)
             return
         }
