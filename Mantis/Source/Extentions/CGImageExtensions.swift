@@ -14,6 +14,8 @@ import UIKit
 extension CGImage {
     
     func transformedImage(_ transform: CGAffineTransform, zoomScale: CGFloat, sourceSize: CGSize, cropSize: CGSize, imageViewSize: CGSize) -> CGImage? {
+        guard imageViewSize != .zero else { return nil }
+        
         guard var colorSpaceRef = self.colorSpace else {
             return self
         }
