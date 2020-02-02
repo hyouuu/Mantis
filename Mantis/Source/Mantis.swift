@@ -60,6 +60,7 @@ public struct Config {
     
     public var showRotationDial = true
     
+    public var optionButtonVerticalPad: CGFloat = 4
     public var optionButtonFontSize: CGFloat = 14
     public var optionButtonFontSizeForPad: CGFloat = 20
     
