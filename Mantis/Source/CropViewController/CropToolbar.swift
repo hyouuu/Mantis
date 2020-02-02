@@ -14,6 +14,7 @@ public enum CropToolbarMode {
 }
 
 class CropToolbar: UIView {
+    var optionButtonVerticalPad: CGFloat = 4
     var optionButtonFontSize: CGFloat = 14
     var optionButtonFontSizeForPad: CGFloat = 20
 
@@ -49,7 +50,10 @@ class CropToolbar: UIView {
         }
         
         button.addTarget(self, action: action, for: .touchUpInside)
-        button.contentEdgeInsets = UIEdgeInsets(top: 4, left: 10, bottom: 4, right: 10)
+        button.contentEdgeInsets = UIEdgeInsets(top: optionButtonVerticalPad,
+                                                left: 10,
+                                                bottom: optionButtonVerticalPad,
+                                                right: 10)
         
         return button
     }
