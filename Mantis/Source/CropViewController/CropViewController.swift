@@ -81,6 +81,7 @@ public class CropViewController: UIViewController {
     fileprivate func createCropToolbar() {
         cropToolbar.backgroundColor = .black
         
+        cropToolbar.optionButtonVerticalPad = config.optionButtonVerticalPad
         cropToolbar.optionButtonFontSize = config.optionButtonFontSize
         cropToolbar.optionButtonFontSizeForPad = config.optionButtonFontSizeForPad
         
