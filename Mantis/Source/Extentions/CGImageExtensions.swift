@@ -13,17 +13,22 @@ import UIKit
 
 extension CGImage {
     
-    func transformedImage(_ transform: CGAffineTransform, zoomScale: CGFloat, sourceSize: CGSize, cropSize: CGSize, imageViewSize: CGSize) -> CGImage? {
+    func transformedImage(_ transform: CGAffineTransform,
+                          zoomScale: CGFloat,
+                          sourceSize: CGSize,
+                          cropSize: CGSize,
+                          imageViewSize: CGSize) -> CGImage? {
+
         guard imageViewSize != .zero else { return nil }
         
-        guard var colorSpaceRef = self.colorSpace else {
-            return self
-        }
+        guard var colorSpaceRef = self.colorSpace else { return self }
+
         // If the color space does not allow output, default to the RGB color space
-        if (!colorSpaceRef.supportsOutput) {
-            colorSpaceRef = CGColorSpaceCreateDeviceRGB();
+        if !colorSpaceRef.supportsOutput {
+            colorSpaceRef = CGColorSpaceCreateDeviceRGB()
         }
-        
+
+
         let expectedWidth = floor(sourceSize.width / imageViewSize.width * cropSize.width) / zoomScale
         let expectedHeight = floor(sourceSize.height / imageViewSize.height * cropSize.height) / zoomScale
         let outputSize = CGSize(width: expectedWidth, height: expectedHeight)
@@ -32,39 +37,39 @@ extension CGImage {
         var context = CGContext(data: nil,
                                 width: Int(outputSize.width),
                                 height: Int(outputSize.height),
+                                bitsPerComponent: bitsPerComponent,
+                                bytesPerRow: bitmapBytesPerRow,
+                                space: colorSpaceRef,
+                                bitmapInfo: bitmapInfo.rawValue)
+
+        // If can't create using bitmapInfo, try CGImageAlphaInfo.premultipliedLast
+        if context == nil {
+            context = CGContext(data: nil,
+                                width: Int(outputSize.width),
+                                height: Int(outputSize.height),
+                                bitsPerComponent: bitsPerComponent,
+                                bytesPerRow: bitmapBytesPerRow,
+                                space: colorSpaceRef,
+                                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+        }
+
+        // If still can't create using bitmapInfo, try CGImageAlphaInfo.premultipliedFirst
+        if context == nil {
+            context = CGContext(data: nil,
+                                width: Int(outputSize.width),
+                                height: Int(outputSize.height),
                                 bitsPerComponent: self.bitsPerComponent,
                                 bytesPerRow: bitmapBytesPerRow,
                                 space: colorSpaceRef,
-                                bitmapInfo: self.bitmapInfo.rawValue)
+                                bitmapInfo:CGImageAlphaInfo.premultipliedFirst.rawValue)
+        }
 
-        if context == nil {
-            context = CGContext(data: nil,
-            width: Int(outputSize.width),
-            height: Int(outputSize.height),
-            bitsPerComponent: self.bitsPerComponent,
-            bytesPerRow: bitmapBytesPerRow,
-            space: colorSpaceRef,
-            bitmapInfo:CGImageAlphaInfo.premultipliedLast.rawValue)
-        }
-        
-        if context == nil {
-            context = CGContext(data: nil,
-            width: Int(outputSize.width),
-            height: Int(outputSize.height),
-            bitsPerComponent: self.bitsPerComponent,
-            bytesPerRow: bitmapBytesPerRow,
-            space: colorSpaceRef,
-            bitmapInfo:CGImageAlphaInfo.premultipliedFirst.rawValue)
-        }
-        
         context?.setFillColor(UIColor.clear.cgColor)
-        context?.fill(CGRect(x: 0,
-                             y: 0,
-                             width: outputSize.width,
-                             height: outputSize.height))
+        context?.fill(CGRect(x: 0, y: 0, width: outputSize.width, height: outputSize.height))
         
         var uiCoords = CGAffineTransform(scaleX: outputSize.width / cropSize.width,
                                          y: outputSize.height / cropSize.height)
+
         uiCoords = uiCoords.translatedBy(x: cropSize.width / 2, y: cropSize.height / 2)
         uiCoords = uiCoords.scaledBy(x: 1.0, y: -1.0)
         
