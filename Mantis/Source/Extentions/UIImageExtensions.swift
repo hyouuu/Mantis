@@ -11,20 +11,20 @@
 
 import UIKit
 
+extension CGSize {
+    static func *(lhs: CGSize, rhs: CGFloat) -> CGSize {
+        return CGSize(width: lhs.width * rhs, height: lhs.height * rhs)
+    }
+}
+
 extension UIImage {
-    
     func cgImageWithFixedOrientation() -> CGImage? {
+        guard let cgImage = self.cgImage, let colorSpace = cgImage.colorSpace else { return nil }
         
-        guard let cgImage = self.cgImage, let colorSpace = cgImage.colorSpace else {
-            return nil
-        }
+        guard imageOrientation != .up else { return cgImage }
         
-        if self.imageOrientation == UIImage.Orientation.up {
-            return self.cgImage
-        }
-        
-        let width  = self.size.width
-        let height = self.size.height
+        let width  = size.width * scale
+        let height = size.height * scale
         
         var transform = CGAffineTransform.identity
         
@@ -43,6 +43,7 @@ extension UIImage {
             
         case .up, .upMirrored:
             break
+
         @unknown default:
             break
         }
@@ -60,17 +61,13 @@ extension UIImage {
             break
         }
         
-        guard let context = CGContext(
-            data: nil,
-            width: Int(width),
-            height: Int(height),
-            bitsPerComponent: cgImage.bitsPerComponent,
-            bytesPerRow: 0,
-            space: colorSpace,
-            bitmapInfo: UInt32(cgImage.bitmapInfo.rawValue)
-            ) else {
-                return nil
-        }
+        guard let context = CGContext(data: nil,
+                                      width: Int(width),
+                                      height: Int(height),
+                                      bitsPerComponent: cgImage.bitsPerComponent,
+                                      bytesPerRow: 0,
+                                      space: colorSpace,
+                                      bitmapInfo: UInt32(cgImage.bitmapInfo.rawValue)) else { return nil }
         
         context.concatenate(transform)
         
@@ -83,9 +80,7 @@ extension UIImage {
         }
         
         // And now we just create a new UIImage from the drawing context
-        guard let newCGImg = context.makeImage() else {
-            return nil
-        }
+        guard let newCGImg = context.makeImage() else { return nil }
         
         return newCGImg
     }
@@ -110,24 +105,21 @@ extension UIImage {
     }
     
     func getCroppedImage(byCropInfo info: CropInfo) -> UIImage? {
-        guard let fixedImage = self.cgImageWithFixedOrientation() else {
-            return nil
-        }
+        guard let fixedImage = self.cgImageWithFixedOrientation() else { return nil }
         
         var transform = CGAffineTransform.identity
-        transform = transform.translatedBy(x: info.translation.x, y: info.translation.y)
+        transform = transform.translatedBy(x: info.translation.x * scale, y: info.translation.y * scale)
         transform = transform.rotated(by: info.rotation)
         transform = transform.scaledBy(x: info.scale, y: info.scale)
         
-        guard let imageRef = fixedImage.transformedImage(transform,
-                                                         zoomScale: info.scale,
-                                                         sourceSize: self.size,
-                                                         cropSize: info.cropSize,
-                                                         imageViewSize: info.imageViewSize) else {
-                                                            return nil
-        }
+        guard let imageRef = fixedImage.transformedImage(
+            transform,
+            zoomScale: info.scale,
+            sourceSize: size * scale,
+            cropSize: info.cropSize * scale,
+            imageViewSize: info.imageViewSize * scale) else { return nil }
         
-        return UIImage(cgImage: imageRef)
+        return UIImage(cgImage: imageRef, scale: scale, orientation: imageOrientation)
     }
     
 }
@@ -142,9 +134,9 @@ extension UIImage {
         let format = imageRendererFormat
         format.opaque = false
         
-        let rect = CGRect(origin: .zero, size: size)
+        let rect = CGRect(origin: .zero, size: size * scale)
         
-        return UIGraphicsImageRenderer(size: size, format: format).image() {
+        return UIGraphicsImageRenderer(size: size * scale, format: format).image() {
             _ in
             pathBuilder(rect).addClip()
             UIImage(cgImage: cgImage, scale: scale, orientation: imageOrientation)
