@@ -328,7 +328,7 @@ extension CropViewController: CropViewDelegate {
 // API
 extension CropViewController {
     public func applyCrop(image: UIImage? = nil) -> UIImage? {
-        return cropView.crop(image ?? cropView.image)
+        return cropView.crop(image)
     }
 
     public func crop() {
