@@ -83,10 +83,8 @@ class CropView: UIView {
             self?.render(by: status)
         }
         
-        cropFrameKVO = viewModel.observe(\.cropBoxFrame,
-                                         options: [.new, .old])
-        { [unowned self] _, changed in
-            guard let cropFrame = changed.newValue else { return }
+        cropFrameKVO = viewModel.observe(\.cropBoxFrame, options: [.new, .old]) { [weak self] _, changed in
+            guard let self = self, let cropFrame = changed.newValue else { return }
             self.gridOverlayView.frame = cropFrame
             self.cropMaskViewManager.adaptMaskTo(match: cropFrame)
         }
@@ -146,12 +144,10 @@ class CropView: UIView {
     }
     
     private func imageStatusChanged() -> Bool {
-        if viewModel.getTotalRadians() != 0 { return true }
-        if !isTheSamePoint(p1: getImageLeftTopAnchorPoint(), p2: .zero) {
-            return true
-        }
-        
-        if !isTheSamePoint(p1: getImageRightBottomAnchorPoint(), p2: CGPoint(x: 1, y: 1)) {
+        if viewModel.getTotalRadians() != 0 ||
+            !isTheSamePoint(p1: getImageLeftTopAnchorPoint(), p2: .zero) ||
+            !isTheSamePoint(p1: getImageRightBottomAnchorPoint(), p2: CGPoint(x: 1, y: 1))
+        {
             return true
         }
         
@@ -220,9 +216,7 @@ class CropView: UIView {
     }
     
     private func setupAngleDashboard() {
-        if angleDashboardHeight == 0 {
-            return
-        }
+        guard angleDashboardHeight != 0 else { return }
         
         if rotationDial != nil {
             rotationDial?.removeFromSuperview()
@@ -242,7 +236,8 @@ class CropView: UIView {
         
         rotationDial.setRotationCenter(by: gridOverlayView.center, of: self)
         
-        rotationDial.didRotate = { [unowned self] angle in
+        rotationDial.didRotate = { [weak self] angle in
+            guard let self = self else { return }
             if self.forceFixedRatio {
                 let newRadians = self.viewModel.getTotalRadias(by: angle.radians)
                 self.viewModel.setRotatingStatus(by: CGAngle(radians: newRadians))
@@ -251,8 +246,8 @@ class CropView: UIView {
             }
         }
         
-        rotationDial.didFinishedRotate = { [unowned self] in
-            self.viewModel.setBetweenOperationStatus()
+        rotationDial.didFinishedRotate = { [weak self] in
+            self?.viewModel.setBetweenOperationStatus()
         }
         
         rotationDial.rotateDialPlate(by: CGAngle(radians: viewModel.radians))
@@ -291,8 +286,8 @@ class CropView: UIView {
     }    
 }
 
-
 // MARK: - Adjust UI
+
 extension CropView {
     private func rotateScrollView() {
         let totalRadians = forceFixedRatio ? viewModel.radians : viewModel.getTotalRadians()
@@ -302,9 +297,7 @@ extension CropView {
     }
     
     private func getInitialCropBoxRect() -> CGRect {
-        guard image.size.width > 0 && image.size.height > 0 else {
-            return .zero
-        }
+        guard image.size.width > 0 && image.size.height > 0 else { return .zero }
         
         let outsideRect = getContentBounds()
         
@@ -503,9 +496,7 @@ extension CropView {
                             cropSize: gridOverlayView.frame.size,
                             imageViewSize: imageContainer.bounds.size)
         
-        guard let croppedImage = image.getCroppedImage(byCropInfo: info) else {
-            return nil
-        }
+        guard let croppedImage = image.getCroppedImage(byCropInfo: info) else { return nil }
         
         switch cropShapeType {
         case .rect:
@@ -556,7 +547,7 @@ extension CropView {
             
             UIView.animate(withDuration: 0.5, animations: {
                 self.viewModel.setRotatingStatus(by: angle)
-            }) {[weak self] _ in
+            }) { [weak self] _ in
                 guard let self = self else { return }
                 self.viewModel.counterclockwiseRotate90()
                 self.viewModel.setBetweenOperationStatus()
@@ -578,7 +569,7 @@ extension CropView {
             self.viewModel.cropBoxFrame = newRect
             self.scrollView.transform = transfrom
             self.updatePositionFor90Rotation(by: radian + self.viewModel.radians)
-        }) {[weak self] _ in
+        }) { [weak self] _ in
             guard let self = self else { return }
             self.viewModel.counterclockwiseRotate90()
             self.viewModel.setBetweenOperationStatus()
