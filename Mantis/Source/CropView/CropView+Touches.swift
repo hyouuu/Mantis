@@ -15,8 +15,8 @@ extension CropView {
             return rotationDial
         }
         
-        if (gridOverlayView.frame.insetBy(dx: -hotAreaUnit, dy: -hotAreaUnit).contains(p) &&
-            !gridOverlayView.frame.insetBy(dx: hotAreaUnit, dy: hotAreaUnit).contains(p))
+        if gridOverlayView.frame.insetBy(dx: -hotAreaUnit, dy: -hotAreaUnit).contains(p) &&
+            !gridOverlayView.frame.insetBy(dx: hotAreaUnit, dy: hotAreaUnit).contains(p)
         {
             return self
         }
@@ -31,11 +31,9 @@ extension CropView {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesBegan(touches, with: event)
         
-        guard touches.count == 1, let touch = touches.first else {
-            return
-        }
+        guard touches.count == 1, let touch = touches.first else { return }
         
-        if touch.view is RotationDial {
+        if isTouchForRotation(touch) {
             viewModel.setTouchRotationBoardStatus()
             return
         }
@@ -47,13 +45,9 @@ extension CropView {
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesMoved(touches, with: event)
         
-        guard touches.count == 1, let touch = touches.first else {
-            return
-        }
+        guard touches.count == 1, let touch = touches.first else { return }
         
-        if touch.view is RotationDial {
-            return
-        }
+        if isTouchForRotation(touch) { return }
         
         let point = touch.location(in: self)
         updateCropBoxFrame(with: point)
@@ -64,12 +58,16 @@ extension CropView {
         
         if viewModel.needCrop() {
             let contentRect = getContentBounds()
-            adjustUIForNewCrop(contentRect: contentRect) {[weak self] in
+            adjustUIForNewCrop(contentRect: contentRect) { [weak self] in
                 self?.viewModel.setBetweenOperationStatus()
             }
         } else {
             viewModel.setBetweenOperationStatus()
         }
+    }
+
+    private func isTouchForRotation(_ touch: UITouch) -> Bool {
+        return touch.view is RotationDial && touch.location(in: touch.view).y > 20
     }
 }
 
