@@ -52,7 +52,8 @@ public struct Config {
     public static var integratedByCocoaPods = true
     
     public var cropShapeType: CropShapeType = .rect
-    
+    public var cropVisualEffectBackgroundAlpha: CGFloat = 1.0
+
     public var ratioOptions: RatioOptions = .all
     var customRatios: [(width: Int, height: Int)] = []
     
