@@ -203,7 +203,8 @@ public class CropViewController: UIViewController {
         cropView.delegate = self
         cropView.clipsToBounds = true
         cropView.cropShapeType = config.cropShapeType
-        
+        cropView.cropVisualEffectBackgroundAlpha = config.cropVisualEffectBackgroundAlpha
+
         if case .alwaysUsingOnePresetFixedRatio = config.presetFixedRatioType {
             cropView.forceFixedRatio = true
         } else {
