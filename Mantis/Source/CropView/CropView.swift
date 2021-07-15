@@ -36,6 +36,11 @@ let cropViewPadding:CGFloat = 14.0
 
 class CropView: UIView {
     var cropShapeType: CropShapeType = .rect
+    var cropVisualEffectBackgroundAlpha: CGFloat = 1.0 {
+        didSet {
+            cropMaskViewManager.cropVisualEffectBackgroundAlpha = cropVisualEffectBackgroundAlpha
+        }
+    }
     
     var angleDashboardHeight: CGFloat = 60
     
@@ -60,7 +65,10 @@ class CropView: UIView {
     var rotationDial: RotationDial?
 
     lazy var scrollView = CropScrollView(frame: bounds)
-    lazy var cropMaskViewManager = CropMaskViewManager(with: self, cropShapeType: cropShapeType)
+    lazy var cropMaskViewManager = CropMaskViewManager(
+        with: self,
+        cropShapeType: cropShapeType,
+        cropVisualEffectBackgroundAlpha: cropVisualEffectBackgroundAlpha)
 
     var manualZoomed = false
     private var cropFrameKVO: NSKeyValueObservation?
